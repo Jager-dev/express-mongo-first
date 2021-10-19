@@ -11,11 +11,13 @@ mongoose.connect(process.env.MONGO_URL)
   .catch(() => console.log("error"))
 
 server.use(express.json())
+
 server.use((req, res,next) => {
   const error = new Error()
   error.message = "Not Found"
   error.status = 404
   res.status(error.status).json({error: error})
+  next()
 })
 
 server.use("/api/tasks", tasksRoutes)

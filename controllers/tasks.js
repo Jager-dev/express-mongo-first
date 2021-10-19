@@ -1,23 +1,10 @@
-const {nanoid} = require("nanoid")
-const fs = require("fs")
+const Tasks = require("../models/taskModel.js")
 
-
-const readData = () => {
-  try{
-    return JSON.parse(fs.readFileSync(`./tasks/shop.json`, "utf-8"))
-  }catch (e){
-    return []
-  }
-}
-
-const writeData = (data) => {
-  fs.writeFileSync(`./tasks/shop.json`, JSON.stringify(data, null, 2))
-}
-
-const tasksList = (req, res) => {
-  const data = readData()
+const tasksList = async (req, res) => {
+  // const data = readData()
+  const data = await Tasks.find({})
   const filteredData = data.filter(item => !item._isDeleted).map(item => {
-    return{
+    return {
       id: item.taskId,
       title: item.title,
       status: item.status
@@ -36,37 +23,27 @@ const tasksTimespan = (req, res) => {
   const filteredData = data.filter(el => +new Date() - el._createdAt < duration[req.params.timespan])
   res.json(filteredData)
 }
-const addTask = (req, res) => {
-  const newTask = {
-    "taskId": nanoid(2),
-    "title": req.body.title,
-    "status": 'new',
-    "_isDeleted": false,
-    "_createdAt": +new Date(),
-    "_deletedAt": null
+const addTask = async (req, res) => {
+  try {
+    const newTask = new Tasks({
+      "title": req.body.title
+    })
+    const saveTask = await newTask.save()
+    res.json(saveTask)
+  } catch (e) {
+    return res.status(401).json({error: "Ошибка сохранения"})
   }
-  const data = readData()
-  const updatedTasks = [...data, newTask]
-  writeData(updatedTasks)
-  res.json(newTask)
 }
-const deleteTask = (req, res) => {
-  const data = readData()
-  const updatedTasks = data.map(el => el.taskId === req.params.id ? {
-    ...el,
-    _isDeleted: true,
-    _deletedAt: +new Date()
-  } : el)
-  writeData(data)
-  res.json(updatedTasks)
+const deleteTask = async (req, res) => {
+  const task = await Tasks.updateOne({_id: req.params.id}, {_isDeleted: true})
+  res.json(task)
 }
-const updateTask = (req, res) => {
+const updateTask = async (req, res) => {
+  const {status} = req.body
   const statuses = ['new', 'in progress', 'done', 'blocked']
-  if (statuses.includes(req.body.status)) {
-    const data = readData()
-    const updatedTasks = data.map(el => el.taskId === req.params.id ? {...el, status: req.body.status} : el)
-    writeData(data)
-    res.json(updatedTasks)
+  if (statuses.includes(status)) {
+    const task = await Tasks.updateOne({_id: req.params.id}, {status})
+    res.json({task})
   } else {
     res.status(501).json({'status': "error", 'message': "incorrect status"})
   }
