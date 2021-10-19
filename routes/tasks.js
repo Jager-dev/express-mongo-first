@@ -5,7 +5,7 @@ const {addTask} = require("../controllers/tasks");
 const {tasksTimespan} = require("../controllers/tasks");
 const {tasksList} = require("../controllers/tasks");
 
-const router = express().Router
+const router = express.Router()
 
 router.get("/", tasksList)
 router.get("/:timespan", tasksTimespan)
