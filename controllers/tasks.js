@@ -1,5 +1,5 @@
-const fs = require("fs")
 const {nanoid} = require("nanoid")
+const fs = require("fs")
 
 
 const readData = () => {
@@ -14,9 +14,9 @@ const writeData = (data) => {
   fs.writeFileSync(`./tasks/shop.json`, JSON.stringify(data, null, 2))
 }
 
-export const tasksList = (req, res, next) => {
+const tasksList = (req, res) => {
   const data = readData()
-  const filteredData = data.filter(item => !item._isDelted).map(item => {
+  const filteredData = data.filter(item => !item._isDeleted).map(item => {
     return{
       id: item.taskId,
       title: item.title,
@@ -24,9 +24,8 @@ export const tasksList = (req, res, next) => {
     }
   })
   res.json(filteredData)
-  next()
 }
-export const tasksTimespan = (req, res) => {
+const tasksTimespan = (req, res) => {
   const data = readData()
   const duration = {
     "day": 1000 * 60 * 60 * 24,
@@ -37,7 +36,7 @@ export const tasksTimespan = (req, res) => {
   const filteredData = data.filter(el => +new Date() - el._createdAt < duration[req.params.timespan])
   res.json(filteredData)
 }
-export const addTask = (req, res) => {
+const addTask = (req, res) => {
   const newTask = {
     "taskId": nanoid(2),
     "title": req.body.title,
@@ -51,7 +50,7 @@ export const addTask = (req, res) => {
   writeData(updatedTasks)
   res.json(newTask)
 }
-export const deleteTask = (req, res) => {
+const deleteTask = (req, res) => {
   const data = readData()
   const updatedTasks = data.map(el => el.taskId === req.params.id ? {
     ...el,
@@ -61,7 +60,7 @@ export const deleteTask = (req, res) => {
   writeData(data)
   res.json(updatedTasks)
 }
-export const updateTask = (req, res) => {
+const updateTask = (req, res) => {
   const statuses = ['new', 'in progress', 'done', 'blocked']
   if (statuses.includes(req.body.status)) {
     const data = readData()
