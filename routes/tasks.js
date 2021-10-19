@@ -7,10 +7,10 @@ const {tasksList} = require("../controllers/tasks");
 
 const router = express().Router
 
-router.get("/:category", tasksList)
-router.get("/:category/:timespan", tasksTimespan)
-router.post("/:category", addTask)
-router.delete("/:category/:id", deleteTask)
-router.patch("/:category/:id", updateTask)
+router.get("/", tasksList)
+router.get("/:timespan", tasksTimespan)
+router.post("/", addTask)
+router.delete("/:id", deleteTask)
+router.patch("/:id", updateTask)
 
 module.exports = router
