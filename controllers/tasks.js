@@ -1,19 +1,20 @@
 const Tasks = require("../models/taskModel.js")
 
 const tasksList = async (req, res) => {
-  // const data = readData()
   const data = await Tasks.find({})
-  const filteredData = data.filter(item => !item._isDeleted).map(item => {
+  const filteredData = data
+    .filter(item => !item._isDeleted)
+    .map(item => {
     return {
-      id: item.taskId,
+      id: item._id,
       title: item.title,
       status: item.status
     }
   })
   res.json(filteredData)
 }
-const tasksTimespan = (req, res) => {
-  const data = readData()
+const tasksTimespan = async (req, res) => {
+  const data = await Tasks.find({})
   const duration = {
     "day": 1000 * 60 * 60 * 24,
     "week": 1000 * 60 * 60 * 24 * 7,
@@ -35,14 +36,18 @@ const addTask = async (req, res) => {
   }
 }
 const deleteTask = async (req, res) => {
-  const task = await Tasks.updateOne({_id: req.params.id}, {_isDeleted: true})
-  res.json(task)
+  const updatedTask = await Tasks.findOneAndUpdate(
+    {_id: req.params.id},
+    {_isDeleted: true, _deletedAt: +new Date()},
+    {new: true})
+  res.json(updatedTask)
 }
 const updateTask = async (req, res) => {
-  const {status} = req.body
+  const id = req.params.id
+  const status = req.body.status
   const statuses = ['new', 'in progress', 'done', 'blocked']
   if (statuses.includes(status)) {
-    const task = await Tasks.updateOne({_id: req.params.id}, {status})
+    const task = await Tasks.updateOne({_id: id}, {status}, {new: true})
     res.json({task})
   } else {
     res.status(501).json({'status': "error", 'message': "incorrect status"})
